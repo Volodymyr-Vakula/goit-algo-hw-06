@@ -82,7 +82,7 @@ class AddressBook(UserDict):
             return self.data[name]
         return None
     
-    # Method to delete an existing phone number
+    # Method to delete an existing record
     def delete(self, name: str):
         if name in self.data:
             self.data.pop(name)
