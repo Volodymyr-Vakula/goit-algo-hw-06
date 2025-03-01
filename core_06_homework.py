@@ -1,22 +1,4 @@
-from typing import Callable
-from functools import wraps
 from collections import UserDict
-
-# Decorator to silently handle phone validation
-def phone_validation(func: Callable):
-    """
-    Handles silently any kind of ValueError for phone number input
-
-    Parameters:
-        func (callable): function operating with phone input
-    """
-    @wraps(func)
-    def inner(*args, **kwargs):
-        try:
-            return func(*args, **kwargs)
-        except ValueError:
-            return None
-    return inner
 
 class Field:
     def __init__(self, value: str):
@@ -31,7 +13,9 @@ class Name(Field):
 class Phone(Field):
     def __init__(self, value: str):
         if len(value) != 10:
-            raise ValueError(f"Phone number {value} is not 10 digits long")
+            raise ValueError("Phone number must be 10 digits long")
+        if not value.isdigit():
+            raise ValueError("Phone number must contain digits only")
         super().__init__(value)
 
 class Record:
@@ -40,31 +24,28 @@ class Record:
         self.phones = []
     
     # Method to add a new phone number
-    @phone_validation
     def add_phone(self, phone: str):
         phone = Phone(phone)
         if phone.value not in [ph.value for ph in self.phones]:
             self.phones.append(phone)
     
-    # Method to remove an existing phone number
-    @phone_validation
+    # Method to remove a phone number
     def remove_phone(self, phone: str):
-        phone = Phone(phone)
-        self.phones = [ph for ph in self.phones if ph.value != phone.value]
+        self.phones = [ph for ph in self.phones if ph.value != phone]
     
     # Method to edit an existing phone number
-    @phone_validation
     def edit_phone(self, old_phone: str, new_phone: str):
-        old_phone = Phone(old_phone)
-        new_phone = Phone(new_phone)
-        self.phones = [ph if ph.value != old_phone.value else new_phone for ph in self.phones]
+        if old_phone in [ph.value for ph in self.phones]:
+            self.remove_phone(old_phone)
+            self.add_phone(new_phone)
+        else:
+            raise ValueError("Phone number to be edited is missing from the list")
 
     # Method to find a phone number
-    @phone_validation
     def find_phone(self, phone: str) -> Phone | None:
-        phone = Phone(phone)
-        if phone.value in [ph.value for ph in self.phones]:
-            return phone
+        for ph in self.phones:
+            if phone == ph.value:
+                return ph
         return None
 
     def __str__(self):
