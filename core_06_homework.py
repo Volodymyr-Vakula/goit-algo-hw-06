@@ -36,8 +36,8 @@ class Record:
     # Method to edit an existing phone number
     def edit_phone(self, old_phone: str, new_phone: str):
         if old_phone in [ph.value for ph in self.phones]:
-            self.remove_phone(old_phone)
             self.add_phone(new_phone)
+            self.remove_phone(old_phone)
         else:
             raise ValueError("Phone number to be edited is missing from the list")
 
